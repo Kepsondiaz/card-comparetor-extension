@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head><title>Download Icons</title></head>
+<body>
+<h1>Extension Icon Generator</h1>
+<p>Click each button to download the icon:</p>
+
+<canvas id="canvas16" width="16" height="16" style="border:1px solid #ccc; margin:10px;"></canvas>
+<button onclick="download(16)">Download icon-16.png</button>
+<br>
+<canvas id="canvas48" width="48" height="48" style="border:1px solid #ccc; margin:10px;"></canvas>
+<button onclick="download(48)">Download icon-48.png</button>
+<br>
+<canvas id="canvas128" width="128" height="128" style="border:1px solid #ccc; margin:10px;"></canvas>
+<button onclick="download(128)">Download icon-128.png</button>
+
+<script>
+
+const canvas16 = document.getElementById('canvas16');
+const ctx16 = canvas16.getContext('2d');
+ctx16.fillStyle = '#2563eb';
+ctx16.fillRect(0, 0, 16, 16);
+ctx16.fillStyle = 'white';
+ctx16.font = 'bold 6px Arial';
+ctx16.textAlign = 'center';
+ctx16.textBaseline = 'middle';
+ctx16.fillText('AC', 8, 8);
+window.canvas16 = canvas16;
+
+
+const canvas48 = document.getElementById('canvas48');
+const ctx48 = canvas48.getContext('2d');
+ctx48.fillStyle = '#2563eb';
+ctx48.fillRect(0, 0, 48, 48);
+ctx48.fillStyle = 'white';
+ctx48.font = 'bold 19px Arial';
+ctx48.textAlign = 'center';
+ctx48.textBaseline = 'middle';
+ctx48.fillText('AC', 24, 24);
+window.canvas48 = canvas48;
+
+
+const canvas128 = document.getElementById('canvas128');
+const ctx128 = canvas128.getContext('2d');
+ctx128.fillStyle = '#2563eb';
+ctx128.fillRect(0, 0, 128, 128);
+ctx128.fillStyle = 'white';
+ctx128.font = 'bold 51px Arial';
+ctx128.textAlign = 'center';
+ctx128.textBaseline = 'middle';
+ctx128.fillText('AC', 64, 64);
+window.canvas128 = canvas128;
+
+function download(size) {
+  const canvas = window['canvas' + size];
+  const link = document.createElement('a');
+  link.download = 'icon-' + size + '.png';
+  link.href = canvas.toDataURL();
+  link.click();
+}
+</script>
+</body>
+</html>

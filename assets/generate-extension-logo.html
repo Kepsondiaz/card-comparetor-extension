@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Extension Logo Generator</title>
+  <style>
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      max-width: 1200px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #1a1a1a;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+    }
+    .logo-preview {
+      display: flex;
+      gap: 30px;
+      flex-wrap: wrap;
+      margin: 30px 0;
+    }
+    .preview-item {
+      text-align: center;
+    }
+    canvas {
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      margin: 10px 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 5px;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #1d4ed8;
+    }
+    .info {
+      background: #f0f9ff;
+      border-left: 4px solid #2563eb;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    .info strong {
+      color: #1e40af;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎴 AfriCard Compare - Extension Logo Generator</h1>
+    <p class="subtitle">Generate professional extension icons for Chrome Web Store</p>
+    
+    <div class="info">
+      <strong>Instructions:</strong> Click each download button to save the icon. The logos will be saved with the correct filenames for your extension.
+    </div>
+
+    <div class="logo-preview" id="previews"></div>
+  </div>
+
+  <script>
+    const sizes = [16, 48, 128];
+    const previewsContainer = document.getElementById('previews');
+
+    function drawLogo(canvas, size) {
+      const ctx = canvas.getContext('2d');
+      canvas.width = size;
+      canvas.height = size;
+      
+      // Clear canvas
+      ctx.clearRect(0, 0, size, size);
+      
+      // Background gradient
+      const gradient = ctx.createLinearGradient(0, 0, size, size);
+      gradient.addColorStop(0, '#2563eb');
+      gradient.addColorStop(1, '#1e40af');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, size, size);
+      
+      // Draw card shapes (representing comparison)
+      const cardSize = size * 0.25;
+      const spacing = size * 0.15;
+      const centerY = size / 2;
+      
+      // Left card
+      const leftX = size * 0.25;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+      ctx.roundRect(leftX - cardSize/2, centerY - cardSize/2, cardSize, cardSize, size * 0.05);
+      ctx.fill();
+      
+      // Right card
+      const rightX = size * 0.75;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+      ctx.roundRect(rightX - cardSize/2, centerY - cardSize/2, cardSize, cardSize, size * 0.05);
+      ctx.fill();
+      
+      // Comparison arrow/equals sign in center
+      const centerX = size / 2;
+      const arrowWidth = size * 0.15;
+      const arrowHeight = size * 0.03;
+      
+      ctx.fillStyle = 'white';
+      // Draw equals sign (=)
+      ctx.fillRect(centerX - arrowWidth/2, centerY - arrowHeight * 1.5, arrowWidth, arrowHeight);
+      ctx.fillRect(centerX - arrowWidth/2, centerY + arrowHeight * 0.5, arrowWidth, arrowHeight);
+      
+      // Add small "compare" indicator (optional - only for larger sizes)
+      if (size >= 48) {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.font = `bold ${size * 0.12}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        // Small "vs" text at bottom
+        ctx.fillText('vs', centerX, size * 0.85);
+      }
+    }
+
+    // Add roundRect polyfill for older browsers
+    if (!CanvasRenderingContext2D.prototype.roundRect) {
+      CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
+        this.beginPath();
+        this.moveTo(x + radius, y);
+        this.lineTo(x + width - radius, y);
+        this.quadraticCurveTo(x + width, y, x + width, y + radius);
+        this.lineTo(x + width, y + height - radius);
+        this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        this.lineTo(x + radius, y + height);
+        this.quadraticCurveTo(x, y + height, x, y + height - radius);
+        this.lineTo(x, y + radius);
+        this.quadraticCurveTo(x, y, x + radius, y);
+        this.closePath();
+      };
+    }
+
+    // Generate previews and download buttons
+    sizes.forEach(size => {
+      const previewDiv = document.createElement('div');
+      previewDiv.className = 'preview-item';
+      
+      const canvas = document.createElement('canvas');
+      canvas.id = `canvas-${size}`;
+      canvas.width = size;
+      canvas.height = size;
+      
+      drawLogo(canvas, size);
+      
+      const label = document.createElement('div');
+      label.style.marginTop = '10px';
+      label.style.fontWeight = '600';
+      label.style.color = '#333';
+      label.textContent = `${size}×${size} pixels`;
+      
+      const button = document.createElement('button');
+      button.textContent = `Download icon-${size}.png`;
+      button.onclick = () => downloadIcon(size, canvas);
+      
+      previewDiv.appendChild(canvas);
+      previewDiv.appendChild(label);
+      previewDiv.appendChild(button);
+      
+      previewsContainer.appendChild(previewDiv);
+    });
+
+    function downloadIcon(size, canvas) {
+      const link = document.createElement('a');
+      link.download = `icon-${size}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    // Also create a preview at 256x256 for reference
+    const largePreview = document.createElement('div');
+    largePreview.style.marginTop = '40px';
+    largePreview.style.paddingTop = '30px';
+    largePreview.style.borderTop = '2px solid #e0e0e0';
+    largePreview.innerHTML = '<h2 style="margin-bottom: 20px;">Large Preview (256×256)</h2>';
+    
+    const largeCanvas = document.createElement('canvas');
+    largeCanvas.width = 256;
+    largeCanvas.height = 256;
+    drawLogo(largeCanvas, 256);
+    largePreview.appendChild(largeCanvas);
+    
+    document.querySelector('.container').appendChild(largePreview);
+  </script>
+</body>
+</html>
+
