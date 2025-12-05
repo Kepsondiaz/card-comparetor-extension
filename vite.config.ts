@@ -27,19 +27,31 @@ function copyManifestAndAssets() {
         console.warn('⚠ Could not copy manifest.json:', err);
       }
       
-      // Copy assets if they exist
+      // Copy assets if they exist (including subdirectories)
       const assetsSource = resolve(__dirname, 'assets');
       if (existsSync(assetsSource)) {
         try {
-          const files = readdirSync(assetsSource);
-          files.forEach((file: string) => {
-            if (file.endsWith('.png') || file.endsWith('.jpg') || file.endsWith('.svg')) {
-              copyFileSync(
-                resolve(assetsSource, file),
-                resolve(assetsDir, file)
-              );
+          const copyAssetsRecursive = (sourceDir: string, targetDir: string) => {
+            if (!existsSync(targetDir)) {
+              mkdirSync(targetDir, { recursive: true });
             }
-          });
+            
+            const items = readdirSync(sourceDir, { withFileTypes: true });
+            items.forEach((item) => {
+              const sourcePath = resolve(sourceDir, item.name);
+              const targetPath = resolve(targetDir, item.name);
+              
+              if (item.isDirectory()) {
+                // Recursively copy subdirectories
+                copyAssetsRecursive(sourcePath, targetPath);
+              } else if (item.isFile() && (item.name.endsWith('.png') || item.name.endsWith('.jpg') || item.name.endsWith('.svg'))) {
+                // Copy image files
+                copyFileSync(sourcePath, targetPath);
+              }
+            });
+          };
+          
+          copyAssetsRecursive(assetsSource, assetsDir);
           console.log('✓ Copied assets');
         } catch (err) {
           console.warn('⚠ Could not copy assets:', err);

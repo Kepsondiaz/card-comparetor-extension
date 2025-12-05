@@ -20,11 +20,36 @@ async function getDeviceId(): Promise<string> {
   });
 }
 
+// Request optional host permissions if not already granted
+async function ensureMixpanelPermissions(): Promise<boolean> {
+  try {
+    const permissions = {
+      origins: ['https://api.mixpanel.com/*']
+    };
+    
+    // Check if permissions are already granted
+    const hasPermissions = await chrome.permissions.contains(permissions);
+    if (hasPermissions) {
+      return true;
+    }
+    
+    // Request permissions (non-blocking for analytics)
+    const granted = await chrome.permissions.request(permissions);
+    return granted;
+  } catch (error) {
+    return false;
+  }
+}
+
 // Send event to Mixpanel via HTTP API
 async function sendToMixpanel(eventName: string, properties: Record<string, any> = {}) {
   if (!MIXPANEL_TOKEN) {
     return;
   }
+  
+  // Request permissions if needed (non-blocking)
+  await ensureMixpanelPermissions();
+  
   try {
     const deviceId = await getDeviceId();
     const data = {

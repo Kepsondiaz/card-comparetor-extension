@@ -2,12 +2,43 @@ import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { ExchangeRateRow, RatesData, Provider, Currency } from '../types/calculator';
 
 /**
+ * Request optional host permissions if not already granted
+ */
+async function ensurePermissions(): Promise<boolean> {
+  try {
+    const permissions = {
+      origins: [
+        'https://dhfvtmzvitkdydjgzrov.supabase.co/*',
+        'https://api.mixpanel.com/*'
+      ]
+    };
+    
+    // Check if permissions are already granted
+    const hasPermissions = await chrome.permissions.contains(permissions);
+    if (hasPermissions) {
+      return true;
+    }
+    
+    // Request permissions
+    const granted = await chrome.permissions.request(permissions);
+    return granted;
+  } catch (error) {
+    // Silently fail - permissions might not be available in all contexts
+    return false;
+  }
+}
+
+/**
  * Fetch all active exchange rates from Supabase
  */
 export async function fetchRatesFromSupabase(): Promise<RatesData | null> {
   if (!isSupabaseConfigured() || !supabase) {
     return null;
   }
+  
+  // Request permissions if needed
+  await ensurePermissions();
+  
   try {
     const { data, error } = await supabase
       .from('exchange_rates')
@@ -82,6 +113,9 @@ export function subscribeToRateUpdates(callback: (data: RatesData | null) => voi
   if (!isSupabaseConfigured() || !supabase) {
     return () => {}; // Return empty cleanup function
   }
+
+  // Request permissions if needed (async, don't wait)
+  ensurePermissions().catch(() => {});
 
   const channel = supabase
     .channel('exchange_rates_changes')
